@@ -105,8 +105,7 @@ int main(int argc, char* argv[]) {
 
 
 /*-------------------------------------------------------------------*/
-double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm, 
-                    int p, int my_rank) {
+double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm, int p, int my_rank) {
     int i;
     MPI_Status status;
     double start;
@@ -116,6 +115,7 @@ double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm,
     if (my_rank == 0) {
 #       ifndef CLOCK
             /* (118) start timer for measurement with MPI_Wtime() */
+            start = MPI_Wtime();
 #       else
             /* (120) start timer for measurement with clock() */
             start = clock();
@@ -126,6 +126,8 @@ double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm,
         }
 #       ifndef CLOCK
             /* (127) return elapsed time as measured by MPI_Wtime() */
+            end = MPI_Wtime();
+            elapsed = end - start;
 #       else
             /* (129) return elapsed time as measured by clock() */
             end = clock();
@@ -141,6 +143,7 @@ double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm,
             MPI_Send(mesg, mesg_size, MPI_CHAR, 0, 0, comm);
         }
     }
+
     return elapsed;
 }   /* ping_pong */
 
