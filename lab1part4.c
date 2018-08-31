@@ -1,12 +1,12 @@
-/* File:     lab1part4.c
+/* File:    lab1part4.c
  *
- * Purpose:  Determine message-passing times using ping pong.
+ * Purpose: Determine message-passing times using ping pong.
  *
- * Compile:  mpicc ...
- * Run:      mpiexec ...
+ * Compile: mpicc ...
+ * Run:     mpiexec ...
  *
- * Input:    none
- * Output:   Average message times for a range of message sizes.
+ * Input:   none
+ * Output:  Average message times for a range of message sizes.
  *
  * Notes:
  * 1. Prints *average* time per message.  So ping pong times are divided by 2
@@ -20,8 +20,7 @@
 #include <time.h>
 #include "mpi.h"
 
-/* Use these parameters for generating times
- */
+/* Use these parameters for generating times */
 #ifndef DEBUG
 #define WARMUP_ITERS 10
 #define RES_TEST_ITERS 10
@@ -32,8 +31,7 @@
 #define TEST_COUNT 1
 #endif
 
-/* Use these parameters to be sure the program is correct
- */
+/* Use these parameters to be sure the program is correct */
 #ifdef DEBUG
 #define WARMUP_ITERS 1
 #define RES_TEST_ITERS 1
@@ -52,113 +50,119 @@ int next_size(int current_size);
 
 /*-------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
-   int test, mesg_size, i;
-   double elapsed;
-   double times[TEST_COUNT];
-   char message[MAX_MESG_SIZE];
-   char c = 'B';
-   MPI_Comm  comm;
-   int p;
-   int my_rank;
+    int test, mesg_size, i;
+    double elapsed;
+    double times[TEST_COUNT];
+    char message[MAX_MESG_SIZE];
+    char c = 'B';
+    MPI_Comm  comm;
+    int p;
+    int my_rank;
 
-   MPI_Init(&argc, &argv);
-   comm = MPI_COMM_WORLD;
-   MPI_Comm_size(comm, &p);
-   MPI_Comm_rank(comm, &my_rank);
-   if (p != 2) {
-      if (my_rank == 0)
-         fprintf(stderr, "Use two processes\n");
-      MPI_Finalize();
-      return 0;
-   }
+    MPI_Init(&argc, &argv);
+    comm = MPI_COMM_WORLD;
+    MPI_Comm_size(comm, &p);
+    MPI_Comm_rank(comm, &my_rank);
+    if (p != 2) {
+        if (my_rank == 0)
+            fprintf(stderr, "Use two processes\n");
+        MPI_Finalize();
+        return 0;
+    }
 
-   if (my_rank == 0)
-      c = 'A';
-   for (i = 0; i < MAX_MESG_SIZE; i++)
-      message[i] = c;
+    if (my_rank == 0)
+        c = 'A';
+    for (i = 0; i < MAX_MESG_SIZE; i++)
+        message[i] = c;
 
-   /* Warmup */
-   elapsed = ping_pong(message, MAX_MESG_SIZE, WARMUP_ITERS, comm, p, my_rank);
+    /* Warmup */
+    elapsed = ping_pong(message, MAX_MESG_SIZE, WARMUP_ITERS, comm, p, my_rank);
 
-   /* Resolution */
-   elapsed = ping_pong(message, 0, RES_TEST_ITERS, comm, p, my_rank);
-   if (my_rank == 0)
-#     ifndef CLOCK
-      fprintf(stderr, "Min ping_pong = %8.5e, Clock tick = %8.5e\n", elapsed/(2*RES_TEST_ITERS), MPI_Wtick());
-#     else
-      fprintf(stderr, "Min ping_pong = %8.5e, Clock tick = %8.5e\n", elapsed/(2*RES_TEST_ITERS), 1.0/clocks_per_sec);
-#     endif
+    /* Resolution */
+    elapsed = ping_pong(message, 0, RES_TEST_ITERS, comm, p, my_rank);
+    if (my_rank == 0)
+#       ifndef CLOCK
+            fprintf(stderr, "Min ping_pong = %8.5e, Clock tick = %8.5e\n", elapsed/(2*RES_TEST_ITERS), MPI_Wtick());
+#       else
+            fprintf(stderr, "Min ping_pong = %8.5e, Clock tick = %8.5e\n", elapsed/(2*RES_TEST_ITERS), 1.0/clocks_per_sec);
+#      endif
 
-   for (mesg_size = MIN_MESG_SIZE; mesg_size <= MAX_MESG_SIZE; 
-        mesg_size = next_size(mesg_size)) {
-      for (test = 0; test < TEST_COUNT; test++) {
-         times[test] = ping_pong(message, mesg_size, PING_PONG_ITERS, comm, p, my_rank);
-      }  /* for test */
+    for (mesg_size = MIN_MESG_SIZE; mesg_size <= MAX_MESG_SIZE; 
+          mesg_size = next_size(mesg_size)) {
+        for (test = 0; test < TEST_COUNT; test++) {
+            times[test] = ping_pong(message, mesg_size, PING_PONG_ITERS, comm, p, my_rank);
+        }   /* for test */
 
-      if (my_rank == 0) {
-         for (test = 0; test < TEST_COUNT; test++)
-            printf("%d %8.5e\n", mesg_size, times[test]/(2*PING_PONG_ITERS));
-      }
-   } /* for mesg_size */
+        if (my_rank == 0) {
+            for (test = 0; test < TEST_COUNT; test++)
+                printf("%d %8.5e\n", mesg_size, times[test]/(2*PING_PONG_ITERS));
+        }
+    }   /* for mesg_size */
 
-   MPI_Finalize();
-   return 0;
-}  /* main */
+    MPI_Finalize();
+    return 0;
+}   /* main */
 
 
 /*-------------------------------------------------------------------*/
 double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm, 
-               int p, int my_rank) {
-   int i;
-   MPI_Status status;
-   double start;
+                    int p, int my_rank) {
+    int i;
+    MPI_Status status;
+    double start;
+    double end;
+    double elapsed;
 
-   if (my_rank == 0) {
-#     ifndef CLOCK
-      /* start timer for measurement with MPI_Wtime() */
-#     else
-      /* start timer for measurement with clock() */
-#     endif
-      for (i = 0; i < iters; i++) {
-         MPI_Send(mesg, mesg_size, MPI_CHAR, 1, 0, comm);
-         MPI_Recv(mesg, mesg_size, MPI_CHAR, 1, 0, comm, &status);
-      }
-#     ifndef CLOCK
-      /* return elapsed time as measured by MPI_Wtime() */ 
-#     else
-      /* return elapsed time as measured by clock() */ 
-#     endif
-   } else if (my_rank == 1) {
-      for (i = 0; i < iters; i++) {
-         MPI_Recv(mesg, mesg_size, MPI_CHAR, 0, 0, comm, &status);
-#        ifdef DEBUG
-         print_buffer(mesg, mesg_size, 1);
-#        endif
-         MPI_Send(mesg, mesg_size, MPI_CHAR, 0, 0, comm);
-      }
-   }
-   return 0.0;
-}  /* ping_pong */
+    if (my_rank == 0) {
+#       ifndef CLOCK
+            /* (118) start timer for measurement with MPI_Wtime() */
+#       else
+            /* (120) start timer for measurement with clock() */
+            start = clock();
+#       endif
+        for (i = 0; i < iters; i++) {
+            MPI_Send(mesg, mesg_size, MPI_CHAR, 1, 0, comm);
+            MPI_Recv(mesg, mesg_size, MPI_CHAR, 1, 0, comm, &status);
+        }
+#       ifndef CLOCK
+            /* (127) return elapsed time as measured by MPI_Wtime() */
+#       else
+            /* (129) return elapsed time as measured by clock() */
+            end = clock();
+            elapsed = (end - start) / CLOCKS_PER_SEC;
+#       endif
+    }
+    else if (my_rank == 1) {
+        for (i = 0; i < iters; i++) {
+            MPI_Recv(mesg, mesg_size, MPI_CHAR, 0, 0, comm, &status);
+#           ifdef DEBUG
+                print_buffer(mesg, mesg_size, 1);
+#           endif
+            MPI_Send(mesg, mesg_size, MPI_CHAR, 0, 0, comm);
+        }
+    }
+    return elapsed;
+}   /* ping_pong */
 
 
 /*-------------------------------------------------------------------*/
 void print_buffer(char mesg[], int mesg_size, int my_rank) {
-   char temp[MAX_MESG_SIZE + 1];
+    char temp[MAX_MESG_SIZE + 1];
 
-   memcpy(temp, mesg, mesg_size);
-   temp[mesg_size] = '\0';
-   printf("Process %d > %s\n", my_rank, temp);
-   fflush(stdout);
-}  /* print_buffer */
+    memcpy(temp, mesg, mesg_size);
+    temp[mesg_size] = '\0';
+    printf("Process %d > %s\n", my_rank, temp);
+    fflush(stdout);
+}   /* print_buffer */
 
 
 /*-------------------------------------------------------------------*/
 int next_size(int current_size) {
 /* return current_size + INCREMENT; */
 
-   if (current_size == 0)
-      return 1;
-   else
-      return 2*current_size;
+    if (current_size == 0)
+        return 1;
+    else
+        return 2*current_size;
 
-}  /* next_size */
+}   /* next_size */
