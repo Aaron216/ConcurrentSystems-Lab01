@@ -34,6 +34,7 @@ int main(void) {
     my_int = random() % MAX_CONTRIB;
     
     sum = Global_sum(my_int, my_rank, comm_sz, comm);
+    // Could use MPI_Reduce() instead
     
     if ( my_rank == 0) {
         all_ints = malloc(comm_sz*sizeof(int));

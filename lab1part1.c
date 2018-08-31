@@ -43,7 +43,7 @@ int main(void) {
     local_number_in_circle = Monte_carlo(local_number_of_tosses, my_rank);
 
     /* Compute global sum of local_number_in_circle and store total in variable number_in_circle in process 0*/
-    MPI_Reduce(&local_number_in_circle, &number_in_circle, 1, MPI_LONG_LONG_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&local_number_in_circle, &number_in_circle, 1, MPI_LONG_LONG_INT, MPI_SUM, 0, comm);
 
     if ( my_rank == 0 ) {
         pi_estimate = 4*number_in_circle/((double)number_of_tosses);
@@ -66,7 +66,7 @@ void Get_input(
         scanf("%lld", number_of_tosses);
     }
 
-    MPI_Bcast(number_of_tosses, 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(number_of_tosses, 1, MPI_LONG_LONG_INT, 0, comm);
 }   /* Get_input */
 
 
@@ -87,7 +87,7 @@ long long int Monte_carlo(long long local_number_of_tosses, int my_rank) {
         printf("Proc %d > x = %f, y = %f, dist squared = %f\n", my_rank, x, y, distance_squared);
 #   endif
         /* if dart falls in unit circle, increment the count number_in_circle */
-        if (distance_squared < 1) {
+        if (distance_squared <= 1.0) {
             number_in_circle++;
         }
     }
