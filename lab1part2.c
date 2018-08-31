@@ -37,7 +37,11 @@ int main(void) {
     
     if ( my_rank == 0) {
         all_ints = malloc(comm_sz*sizeof(int));
-        /* Gather from each process each my_int to send back to process 0 to store all summands in array all_ints*/
+        /* (40) Gather from each process each my_int to send back to process 0 to store all summands in array all_ints*/
+        all_ints[0] = my_int;
+        for (int source = 1; source < comm_sz; source++) {
+            MPI_Recv(&all_ints[source], 1, MPI_INT, source, 0, comm, MPI_STATUS_IGNORE);
+        }
         printf("Ints being summed:\n   ");
         for (i = 0; i < comm_sz; i++)
             printf("%d ", all_ints[i]);
@@ -45,7 +49,8 @@ int main(void) {
         printf("Sum = %d\n",sum);
         free(all_ints);
     } else {
-        /* Gather from each process each my_int to send back to process 0 to store all summands in array all_ints*/
+        /* (48) Gather from each process each my_int to send back to process 0 to store all summands in array all_ints*/
+        MPI_Send(&my_int, 1, MPI_INT, 0, 0, comm);
     }
     
     MPI_Finalize();
