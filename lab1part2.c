@@ -24,7 +24,7 @@ int main(void) {
     int my_rank, comm_sz;
     MPI_Comm comm;
     int* all_ints = NULL;
-    
+
     MPI_Init(NULL, NULL);
     comm = MPI_COMM_WORLD;
     MPI_Comm_size(comm, &comm_sz);
@@ -32,25 +32,27 @@ int main(void) {
 
     srandom(my_rank + 1);
     my_int = random() % MAX_CONTRIB;
-    
+
     sum = Global_sum(my_int, my_rank, comm_sz, comm);
     // Could use MPI_Reduce() instead
-    
-    if ( my_rank == 0) {
+
+    if (my_rank == 0) {
         all_ints = malloc(comm_sz*sizeof(int));
         /* (40) Gather from each process each my_int to send back to process 0 to store all summands in array all_ints*/
         MPI_Gather(&my_int, 1, MPI_INT, all_ints, 1, MPI_INT, 0, comm);
         printf("Ints being summed:\n   ");
-        for (i = 0; i < comm_sz; i++)
+        for (i = 0; i < comm_sz; i++) {
             printf("%d ", all_ints[i]);
+        }
         printf("\n");
         printf("Sum = %d\n",sum);
         free(all_ints);
-    } else {
+    }
+    else {
         /* (48) Gather from each process each my_int to send back to process 0 to store all summands in array all_ints*/
         MPI_Gather(&my_int, 1, MPI_INT, all_ints, 1, MPI_INT, 0, comm);
     }
-    
+
     MPI_Finalize();
     return 0;
 }  /* main */
@@ -58,31 +60,32 @@ int main(void) {
 /*-------------------------------------------------------------------
  * Function:   Global_sum
  * Purpose:    Implement a global sum using tree-structured communication
- * Notes:       
+ * Notes:
  * 1.  The return value is only valid on process 0
  */
 int Global_sum(
-        int my_int    /* in */,
-        int my_rank   /* in */,
-        int comm_sz   /* in */,
-        MPI_Comm comm /* in */) {
-    
+        int my_int      /* in */,
+        int my_rank     /* in */,
+        int comm_sz     /* in */,
+        MPI_Comm comm   /* in */) {
+
     int partner, recvtemp;
     int my_sum = my_int;
     unsigned bitmask = 1;
-    
+
     while (bitmask < comm_sz) {
         partner = my_rank ^ bitmask;
-        
+
         if (my_rank < partner) {
             if (partner < comm_sz) {
-                /* Recv value from partner into recvtemp */ 
+                /* (76) Recv value from partner into recvtemp */ 
                 MPI_Recv(&recvtemp, 1, MPI_INT, partner, 0, comm, MPI_STATUS_IGNORE);
                 my_sum += recvtemp;
             }
             bitmask <<= 1;
-        } else {
-            /* Send value in my_sum to partner process */ 
+        }
+        else {
+            /* (81) Send value in my_sum to partner process */ 
             MPI_Send(&my_sum, 1, MPI_INT, partner, 0, comm);
             break;
         }
