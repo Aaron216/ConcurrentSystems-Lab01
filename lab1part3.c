@@ -54,7 +54,8 @@ int main(void) {
         }
         printf("\n");
         free(all_ints);
-    } else {
+    }
+    else {
         /* (53) Gather from each process each my_int to send back to process 0 and store all summands in array all_ints */
         MPI_Gather(&my_int, 1, MPI_INT, all_ints, 1, MPI_INT, 0, comm);
         /* (54) Gather from each process each sum to send back to process 0 and store each processes' sum in array sum_proc */
@@ -76,7 +77,7 @@ int Global_sum(
         int my_rank   /* in */,
         int comm_sz   /* in */,
         MPI_Comm comm /* in */) {
-    
+
     int partner, recvtemp;
     int my_sum = my_int;
     unsigned bitmask = 1;

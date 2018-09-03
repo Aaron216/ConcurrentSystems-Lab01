@@ -20,7 +20,7 @@
 #include <time.h>
 #include "mpi.h"
 
-#define CLOCK 1
+// #define CLOCK 1
 
 /* Use these parameters for generating times */
 #ifndef DEBUG
@@ -110,9 +110,7 @@ int main(int argc, char* argv[]) {
 double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm, int p, int my_rank) {
     int i;
     MPI_Status status;
-    double start;
-    double end;
-    double elapsed;
+    double start, end, elapsed;
 
     if (my_rank == 0) {
 #       ifndef CLOCK
@@ -165,9 +163,11 @@ void print_buffer(char mesg[], int mesg_size, int my_rank) {
 int next_size(int current_size) {
 /* return current_size + INCREMENT; */
 
-    if (current_size == 0)
+    if (current_size == 0) {
         return 1;
-    else
+    }
+    else {
         return 2*current_size;
+    }
 
 }   /* next_size */
