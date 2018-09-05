@@ -33,10 +33,12 @@ int main(void) {
 
     srandom(my_rank + 1);
     my_int = random() % MAX_CONTRIB;
-    
+
     sum = Global_sum(my_int, my_rank, comm_sz, comm);
-    
-    if ( my_rank == 0) {
+    // Could use MPI_Allreduce() instead
+    // MPI_Allreduce(&my_int, &sum, 1, MPI_INT, MPI_SUM, comm);
+
+    if (my_rank == 0) {
         all_ints = malloc(comm_sz*sizeof(int));
         sum_proc = malloc(comm_sz*sizeof(int));
         /* (41) Gather from each process each my_int to send back to process 0 to store all summands in array all_ints */
@@ -54,7 +56,7 @@ int main(void) {
         }
         printf("\n");
         free(all_ints);
-    }
+    } 
     else {
         /* (53) Gather from each process each my_int to send back to process 0 and store all summands in array all_ints */
         MPI_Gather(&my_int, 1, MPI_INT, all_ints, 1, MPI_INT, 0, comm);
