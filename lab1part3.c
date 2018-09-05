@@ -124,7 +124,7 @@ int Global_sum(
     }
 
     return my_sum;
-}  /* Global_sum */
+}   /* Global_sum */
 
 
 /*-------------------------------------------------------------------*/
@@ -136,4 +136,4 @@ int Floor_log(int comm_sz) {
     }
 
     return fl;
-}  /* Floor_log */
+}   /* Floor_log */
