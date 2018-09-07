@@ -23,7 +23,7 @@
 #include <time.h>
 #include "mpi.h"
 
-// #define CLOCK 1
+#define CLOCK 1
 
 /* Use these parameters for generating times */
 #ifndef DEBUG
