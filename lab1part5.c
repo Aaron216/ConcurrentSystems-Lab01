@@ -1,4 +1,6 @@
-/* 
+/**
+ * Modified by Aaron Musgrave (17762478)
+ * 
  * File:    lab1part5.c
  *
  * Description:
@@ -9,7 +11,7 @@
  *
  * Input:   none
  * Output:  none
- */
+ **/
 
 #include <stdio.h>
 #include <string.h>

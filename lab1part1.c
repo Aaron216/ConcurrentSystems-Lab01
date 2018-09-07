@@ -1,4 +1,6 @@
-/*
+/**
+ * Modified by Aaron Musgrave (17762478)
+ * 
  * File:    lab1part1.c
  *
  * Purpose: Estimate pi using a monte carlo method
@@ -8,7 +10,7 @@
  *
  * Input:   Number of "dart tosses"
  * Output:  Estimate of pi.  If DEBUG flag is set, results of processes' tosses.
- */
+ **/
 
 #include <stdio.h>
 #include <stdlib.h>
