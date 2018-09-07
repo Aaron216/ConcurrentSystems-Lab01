@@ -85,13 +85,13 @@ int main(int argc, char* argv[]) {
 
     /* Resolution */
     elapsed = ping_pong(message, 0, RES_TEST_ITERS, comm, p, my_rank);
-    if (my_rank == 0)
-
-#ifndef CLOCK
+    if (my_rank == 0) {
+#   ifndef CLOCK
             fprintf(stderr, "Min ping_pong = %8.5e, Clock tick = %8.5e\n", elapsed/(2*RES_TEST_ITERS), MPI_Wtick());
-#else
+#   else
             fprintf(stderr, "Min ping_pong = %8.5e, Clock tick = %8.5e\n", elapsed/(2*RES_TEST_ITERS), 1.0/clocks_per_sec);
-#endif
+#   endif
+    }
 
     for (mesg_size = MIN_MESG_SIZE; mesg_size <= MAX_MESG_SIZE; 
           mesg_size = next_size(mesg_size)) {
@@ -117,48 +117,43 @@ double ping_pong(char mesg[], int mesg_size, int iters, MPI_Comm comm, int p, in
     double start, end, elapsed;
 
     if (my_rank == 0) {
-
-#ifndef CLOCK
+#       ifndef CLOCK
             /* (118) start timer for measurement with MPI_Wtime() */
             start = MPI_Wtime();
-#else
+#       else
             /* (120) start timer for measurement with clock() */
             start = clock();
-#endif
-
+#       endif
         for (i = 0; i < iters; i++) {
             MPI_Send(mesg, mesg_size, MPI_CHAR, 1, 0, comm);
             MPI_Recv(mesg, mesg_size, MPI_CHAR, 1, 0, comm, &status);
         }
-
-#ifndef CLOCK
-            /* (127) return elapsed time as measured by MPI_Wtime() */
+#       ifndef CLOCK
+            /* (127) return elapsed time as measured by MPI_Wtime() */\
             end = MPI_Wtime();
-            elapsed = end - start;
+            elapsed = end - start;\
             // Using One line:
             // return (MPI_Wtime() - start);
-#else
+#       else
             /* (129) return elapsed time as measured by clock() */
             end = clock();
             elapsed = (end - start) / CLOCKS_PER_SEC;
             // Using one line:
             // return (clock() - start) / CLOCKS_PER_SEC;
-#endif
+#       endif
 
     }
     else if (my_rank == 1) {
         for (i = 0; i < iters; i++) {
             MPI_Recv(mesg, mesg_size, MPI_CHAR, 0, 0, comm, &status);
-
-#ifdef DEBUG
+#           ifdef DEBUG
                 print_buffer(mesg, mesg_size, 1);
-#endif
-
+#           endif
             MPI_Send(mesg, mesg_size, MPI_CHAR, 0, 0, comm);
         }
     }
-
     return elapsed;
+    // return 0.0;
 }   /* ping_pong */
 
 
